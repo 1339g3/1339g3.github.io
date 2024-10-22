@@ -65,11 +65,11 @@ let retrieveGuess = () => {
 let calculateFeedback = (secret, guess) => {
   let index = 0;
   let feedback = '';
-  let plusHitIndexes = [];
+  let hitIndexes = [];
   while(index < guess.length){
     if(guess[index] == secret[index]){
       feedback += '+';
-      plusHitIndexes.push(index);
+      hitIndexes.push(index);
     }
     index ++
   }
@@ -77,8 +77,9 @@ let calculateFeedback = (secret, guess) => {
   while(index1 < guess.length){
     let index2 = 0;
     while (index2 < secret.length){
-      if(guess[index1] == secret[index2] && index1 != index2 && !plusHitIndexes.includes(index2) ){
+      if(guess[index1] == secret[index2] && index1 != index2 && !hitIndexes.includes(index2) ){
         feedback += '-'
+        hitIndexes.push(index2);
         break;
       }
       index2++;
