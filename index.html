@@ -16,18 +16,7 @@ let makeRandom = () => {
   let s = [digit0,  digit1,  digit2];
   return s;
 }
-let makeRandomWithException = (array) => {
-  let digit0 = randomInt(1, 9);
-  let digit1 = randomInt(1, 9);
-  let digit2 = randomInt(1, 9);
-  while(digit0 == digit1 || digit0 == digit2 || digit2 == digit1 ||  array.includes(digit0) ||array.includes(digit1) || array.includes(digit2)){
-    digit0 = randomInt(1, 9);
-    digit1 = randomInt(1, 9);
-    digit2 = randomInt(1, 9);
-  }
-  let s = [digit0,  digit1,  digit2];
-  return s;
-}
+
 let retrieveGuess = () => {
   return retrieve("Please make a 3-digit guess!")
 }
