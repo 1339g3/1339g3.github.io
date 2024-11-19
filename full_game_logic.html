@@ -1,0 +1,204 @@
+<!DOCTYPE html><html><body><style>button,div{text-align:center}.container{height:200px;position:relative;border:3px solid green}.center{margin:0;position:absolute;top:50%;left:50%;-ms-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}button{background-color:#04aa6d;border:none;color:#fff;padding:15px 32px;text-decoration:none;display:inline-block;font-size:36px}h1{font-size:40px}</style>
+<div class="center"><h1>1773 Group 3 Game Logic Demo</h1><button type="button" onclick="game()">Start</button></div>
+<script>
+let randomInt = (min, max) => { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+let makeRandom = () => {
+  let digit0 = randomInt(1, 9);
+  let digit1 = randomInt(1, 9);
+  let digit2 = randomInt(1, 9);
+  while(digit0 == digit1 || digit0 == digit2 || digit2 == digit1){
+    digit0 = randomInt(1, 9);
+    digit1 = randomInt(1, 9);
+    digit2 = randomInt(1, 9);
+  }
+  let s = [digit0,  digit1,  digit2];
+  return s;
+}
+let makeRandomWithException = (array) => {
+  let digit0 = randomInt(1, 9);
+  let digit1 = randomInt(1, 9);
+  let digit2 = randomInt(1, 9);
+  while(digit0 == digit1 || digit0 == digit2 || digit2 == digit1 ||  array.includes(digit0) ||array.includes(digit1) || array.includes(digit2)){
+    digit0 = randomInt(1, 9);
+    digit1 = randomInt(1, 9);
+    digit2 = randomInt(1, 9);
+  }
+  let s = [digit0,  digit1,  digit2];
+  return s;
+}
+let retrieveGuess = () => {
+  return retrieve("Please make a 3-digit guess!")
+}
+let retrieveSecret = () => {
+  return retrieve("Please give a 3-digit secret!")
+}
+let retrieve = (str) => {
+  let input = ''
+  while (!input || input.length != 3){
+    input = prompt(str);
+  }
+  input = input.split("");
+  return input;
+}
+let calculateFeedback = (secret, guess) => {
+  let index = 0;
+  let feedback = '';
+  let hitIndexes = [];
+  while(index < guess.length){
+    if(guess[index] == secret[index]){
+      feedback += '+';
+      hitIndexes.push(index);
+    }
+    index ++
+  }
+  let index1 = 0;
+  while(index1 < guess.length){
+    let index2 = 0;
+    while (index2 < secret.length){
+      if(guess[index1] == secret[index2] && index1 != index2 && !hitIndexes.includes(index2) ){
+        feedback += '-'
+        hitIndexes.push(index2);
+        break;
+      }
+      index2++;
+    }
+    index1++;
+  }
+  return feedback;
+}
+let analyseFeedback = (state, feedback) => {
+  let guess = state["computer_guess"];
+  let plusCount = countPlus(feedback);
+  console.log("Feedback length "+feedback.length);
+  console.log("Previous length "+state["prev_rating_count"]);
+
+  if(feedback.length < guess.length){ //has not found all digits
+    if(state["prev_rating_count"] != -1 && feedback.length > state["prev_rating_count"]) {//rating increased
+      if(state["replaced_index"] != -1 && state["replaced_digit_new"] > 0 ){
+        state["correct_digit"].push(state["replaced_digit_new"]);
+        state["incorrect_digit"].push(state["replaced_digit_old"]);
+        state["computer_guess"] [state["replaced_index"]] = state["replaced_digit_new"];
+        state["prev_rating_count"] = feedback.length;
+      }
+    } else if(feedback.length < state["prev_rating_count"]) {//rating decreased
+      if(state["replaced_index"] != -1 && state["replaced_digit_old"] > 0 ){
+        state["correct_digit"].push(state["replaced_digit_old"]);
+        state["incorrect_digit"].push(state["replaced_digit_new"]);
+        state["computer_guess"][state["replaced_index"]] = state["replaced_digit_old"];
+      }
+    }
+
+    state = replaceDigit(state["computer_guess"], state);
+    state["computer_guess"] [state["replaced_index"]] = state["replaced_digit_new"];
+  }
+  else if (feedback.length == guess.length)//find three digits but wrong order
+  {
+    console.log("Begin swap");
+    state = swapDigit(state);
+    temp = state["computer_guess"] [state["swap_index1"]];
+    state["computer_guess"] [state["swap_index1"]] = state["computer_guess"] [state["swap_index2"]];
+    state["computer_guess"] [state["swap_index2"]] = temp;
+    
+    console.log(state["swap_count"]);
+  }
+  console.log("State "+ JSON.stringify(state));
+  return state;
+}
+let countPlus = (feedback) => {
+  let index1 = 0;
+  let count = 0;
+  while(index1 < feedback.length){
+    if(feedback.charAt(index1) == '+'){
+      count++;
+    }
+    index1++;
+  }
+  return count;
+}
+let replaceDigit = (guess, state) => {
+  console.log("Replace digit");
+  let index = 0
+  while(index < guess.length){
+    if(!state["correct_digit"].includes(guess[index]))
+      break;
+    index++;
+  }
+  let r = randomInt(1, 9);
+    
+  while(guess.includes(r) || state["correct_digit"].includes(r) || state["incorrect_digit"].includes(r)){
+    r = randomInt(1, 9);
+  }
+  state ["replaced_digit_old"] = guess[index];
+  state ["replaced_index"] = index;
+  state ["replaced_digit_new"] = r;
+  return state;
+  
+}
+let swapDigit = (state) => {
+  let swapPattern = [[0, 1],  [0, 2],  [1, 2],  [2, 1],  [2, 0],  [1, 0]];
+  let pattern = swapPattern[state["swap_count"]]
+  state["swap_index1"] = pattern[0];
+  state["swap_index2"] = pattern[1];
+  state["swap_count"] ++;
+  return state;
+}
+let game = () => {
+  let state = {
+    "replaced_index" : -1, 
+    "replaced_digit_old" : -1, 
+    "replaced_digit_new" : -1,
+    "swap_index1" : -1,
+    "swap_index2" : -1,
+    "swap_count" : 0, 
+    "prev_rating_count" : 0,
+    "prev_plus_count" : -1,
+    "correct_digit" : [], 
+    "incorrect_digit" : [], 
+    "correct_pos" : [], 
+    "computer_guess": []
+  };
+  let player = prompt("Please tell me your name");
+  let playerSecret = retrieveSecret();
+  console.log("Player input "+playerSecret);
+  state["computer_guess"] = makeRandom();
+  console.log("Computer guess is "+ state["computer_guess"]);
+  let feedback = calculateFeedback(playerSecret, state["computer_guess"]);
+  console.log("Feedback is "+ feedback);
+  let message = "Computer Guesses: "+state["computer_guess"];
+  let computerSteps = 1;
+  while(feedback != "+++") {
+    state = analyseFeedback(state, feedback);
+    console.log("Computer guess is "+state["computer_guess"]);
+    message = message + " " + state["computer_guess"];
+    feedback = calculateFeedback(playerSecret, state["computer_guess"]);
+    console.log("Feedback is "+ feedback);
+    computerSteps++;
+    console.log("Step is "+ computerSteps);
+    if(computerSteps > 30)
+      break;
+  }
+  alert(message + " Total steps: "+computerSteps);
+  message = "Player Guesses: ";
+  let computerSecret = makeRandom();
+  let playerGuess = retrieveGuess();
+  message = message + " " + playerGuess;
+  let playerSteps = 1;
+  feedback = calculateFeedback(playerSecret, playerGuess);
+  console.log("Feedback is "+ feedback);
+  while(feedback != "+++") {
+    if (feedback.length == 0) {
+      alert("Feedback for your input: no correct digit");
+    } else if (feedback != "+++") {
+      alert("Feedback for your input is "+ feedback);
+    }
+    playerGuess = retrieveGuess();
+    message = message + " " + playerGuess;
+    playerSteps++;
+    feedback = calculateFeedback(playerSecret, playerGuess);
+    console.log("Feedback is "+ feedback);
+  }
+  alert("Congrats "+ player +", You WIN! Total attempts: "+playerSteps+ " Secret is "+playerSecret[0]+playerSecret[1]+playerSecret[2]);
+}
+</script></body></html> 
