@@ -174,7 +174,7 @@ let game = () => {
     feedback = calculateFeedback(playerSecret, state["computer_guess"]);
     computerSteps++;
     console.log("Step is "+ computerSteps);
-    if(computerSteps > 30)
+    if(computerSteps > 100)//run into error
       break;
   }
   alert(message + " Total steps: "+computerSteps);
