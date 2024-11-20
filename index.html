@@ -74,8 +74,6 @@ let calculateFeedback = (secret, guess) => {
 let analyseFeedback = (state, feedback) => {
   let guess = state["computer_guess"];
   let plusCount = countPlus(feedback);
-  console.log("Feedback length "+feedback.length);
-  console.log("Previous length "+state["prev_rating_count"]);
 
   if(feedback.length < guess.length){ //has not found all digits
     if(state["prev_rating_count"] != -1 && feedback.length > state["prev_rating_count"]) {//rating increased
@@ -92,14 +90,11 @@ let analyseFeedback = (state, feedback) => {
         console.log("Reverted "+state["computer_guess"]);
       }
     }
-
     state = replaceDigit(state["computer_guess"], state);
 
   }
   else if (feedback.length == guess.length)//find three digits but wrong order
   {
-    console.log("Begin swap");
-
     let swapPattern = [[0, 2, 1],  [1, 2, 0],  [2, 1, 0],  [2, 0, 1],  [1, 0, 2]];
     let pattern = swapPattern[state["swap_count"]]
     
@@ -126,7 +121,6 @@ let countPlus = (feedback) => {
   return count;
 }
 let replaceDigit = (guess, state) => {
-  console.log("Replace digit");
   let index = 0
   while(index < guess.length){
     if(!state["correct_digit"].includes(guess[index]))
@@ -143,7 +137,6 @@ let replaceDigit = (guess, state) => {
   state ["replaced_index"] = index;
   state ["replaced_digit_new"] = r;
   state ["computer_guess"] [index] = r;
-  console.log("New Guess "+state["computer_guess"]);
   return state;
   
 }
@@ -162,18 +155,15 @@ let game = () => {
   };
   let player = prompt("Please tell me your name");
   let playerSecret = retrieveSecret();
-  console.log("Player input "+playerSecret);
   state["computer_guess"] = makeRandom();
   let feedback = calculateFeedback(playerSecret, state["computer_guess"]);
   let message = "Computer guesses: "+state["computer_guess"];
-  console.log(message);
   let computerSteps = 1;
   while(feedback != "+++") {
     state = analyseFeedback(state, feedback);
     message = message + " " + feedback + " " +  state["computer_guess"];
     feedback = calculateFeedback(playerSecret, state["computer_guess"]);
     computerSteps++;
-    console.log("Step is "+ computerSteps);
     if(computerSteps > 100)//run into error
       break;
   }
