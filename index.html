@@ -73,7 +73,6 @@ let calculateFeedback = (secret, guess) => {
 }
 let analyseFeedback = (state, feedback) => {
   let guess = state["computer_guess"];
-  let plusCount = countPlus(feedback);
 
   if(feedback.length < guess.length){ //has not found all digits
     if(state["prev_rating_count"] != -1 && feedback.length > state["prev_rating_count"]) {//rating increased
@@ -109,17 +108,7 @@ let analyseFeedback = (state, feedback) => {
   console.log("State "+ JSON.stringify(state));
   return state;
 }
-let countPlus = (feedback) => {
-  let index1 = 0;
-  let count = 0;
-  while(index1 < feedback.length){
-    if(feedback.charAt(index1) == '+'){
-      count++;
-    }
-    index1++;
-  }
-  return count;
-}
+
 let replaceDigit = (guess, state) => {
   let index = 0
   while(index < guess.length){
@@ -164,8 +153,6 @@ let game = () => {
     message = message + " " + feedback + " " +  state["computer_guess"];
     feedback = calculateFeedback(playerSecret, state["computer_guess"]);
     computerSteps++;
-    if(computerSteps > 100)//run into error
-      break;
   }
   alert(message + " Total steps: "+computerSteps);
   
